@@ -10,6 +10,10 @@ on:
         description: "Log level"
         required: true
         default: "warning"
+  schedule:
+    - cron: "0 */6 * * *" # 每6小时检查一次
+  repository_dispatch:
+    types: [aria2_release]
 
 jobs:
   build-macos-arm64:
@@ -20,13 +24,27 @@ jobs:
         architecture: ["arm64"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get latest aria2 version
         id: get_version
         run: |
           LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -oP '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
           echo "::set-output name=version::$LATEST_VERSION"
+
+          # Check if we already have a release for this version
+          EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION})
+          if echo "$EXISTING_RELEASE" | grep -q "tag_name"; then
+            echo "::set-output name=release_exists::true"
+          else
+            echo "::set-output name=release_exists::false"
+          fi
+
+      - name: Skip if release already exists
+        if: steps.get_version.outputs.release_exists == 'true'
+        run: |
+          echo "Release for version v${{ steps.get_version.outputs.version }} already exists, skipping build"
+          exit 78
 
       - name: Build
         run: |
@@ -47,7 +65,7 @@ jobs:
           cp aria2c-macos-${VERSION}-${{ matrix.architecture }}.tar.gz ${{ github.workspace }}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: aria2c-macos-${{ steps.get_version.outputs.version }}-${{ matrix.architecture }}
           path: aria2c-macos-${{ steps.get_version.outputs.version }}-${{ matrix.architecture }}.tar.gz
@@ -65,8 +83,22 @@ jobs:
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -oP '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
           echo "::set-output name=version::$LATEST_VERSION"
+
+          # Check if we already have a release for this version
+          EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION})
+          if echo "$EXISTING_RELEASE" | grep -q "tag_name"; then
+            echo "::set-output name=release_exists::true"
+          else
+            echo "::set-output name=release_exists::false"
+          fi
+
+      - name: Skip if release already exists
+        if: steps.get_version.outputs.release_exists == 'true'
+        run: |
+          echo "Release for version v${{ steps.get_version.outputs.version }} already exists, skipping build"
+          exit 78
 
       - name: Build
         run: |
