@@ -29,7 +29,7 @@ jobs:
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r '.tag_name' | sed 's/release-//')
 
           echo "当前版本: $LATEST_VERSION"
 
@@ -86,7 +86,7 @@ jobs:
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r '.tag_name' | sed 's/release-//')
           echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
           # Check if we already have a release for this version
@@ -137,7 +137,7 @@ jobs:
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r '.tag_name' | sed 's/release-//')
           echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Download artifacts
