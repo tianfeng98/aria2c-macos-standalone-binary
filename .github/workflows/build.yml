@@ -30,10 +30,8 @@ jobs:
         id: get_version
         run: |
           LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r '.tag_name' | sed 's/release-//')
-
-          echo "当前版本: $LATEST_VERSION"
-
           echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "当前版本: $LATEST_VERSION"
 
           # Check if we already have a release for this version
           EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION})
@@ -88,6 +86,7 @@ jobs:
         run: |
           LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r '.tag_name' | sed 's/release-//')
           echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "当前版本: $LATEST_VERSION"
 
           # Check if we already have a release for this version
           EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION})
@@ -139,6 +138,7 @@ jobs:
         run: |
           LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r '.tag_name' | sed 's/release-//')
           echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "当前版本: $LATEST_VERSION"
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
