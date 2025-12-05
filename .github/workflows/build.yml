@@ -29,15 +29,18 @@ jobs:
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -oP '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
-          echo "::set-output name=version::$LATEST_VERSION"
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+
+          echo "当前版本: $LATEST_VERSION"
+
+          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
           # Check if we already have a release for this version
           EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION})
           if echo "$EXISTING_RELEASE" | grep -q "tag_name"; then
-            echo "::set-output name=release_exists::true"
+            echo "release_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=release_exists::false"
+            echo "release_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Skip if release already exists
@@ -78,20 +81,20 @@ jobs:
         architecture: ["x86_64"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -oP '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
-          echo "::set-output name=version::$LATEST_VERSION"
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
           # Check if we already have a release for this version
           EXISTING_RELEASE=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION})
           if echo "$EXISTING_RELEASE" | grep -q "tag_name"; then
-            echo "::set-output name=release_exists::true"
+            echo "release_exists=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=release_exists::false"
+            echo "release_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Skip if release already exists
@@ -119,7 +122,7 @@ jobs:
           cp aria2c-macos-${VERSION}-${{ matrix.architecture }}.tar.gz ${{ github.workspace }}/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: aria2c-macos-${{ steps.get_version.outputs.version }}-${{ matrix.architecture }}
           path: aria2c-macos-${{ steps.get_version.outputs.version }}-${{ matrix.architecture }}.tar.gz
@@ -129,22 +132,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get latest aria2 version
         id: get_version
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -oP '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
-          echo "::set-output name=version::$LATEST_VERSION"
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | grep -o '(?<="tag_name":\s")release-[^"]+' | sed 's/release-//')
+          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: elgohr/Github-Release-Action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
